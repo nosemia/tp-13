@@ -1,0 +1,118 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+class Juego {
+protected:
+    string titulo;
+    float precioBase;
+
+public:
+    Juego(string t, float p) {
+        titulo = t;
+        precioBase = p;
+    }
+
+    string getTitulo() {
+        return titulo;
+    }
+
+    virtual float calcularPrecioFinal() {
+        return precioBase;
+    }
+
+    void aplicarDescuento(float porcentaje) {
+        precioBase = precioBase - (precioBase * porcentaje / 100);
+    }
+
+    void aplicarDescuento(float porcentaje, float cuponFijo) {
+        precioBase = precioBase - (precioBase * porcentaje / 100);
+        precioBase = precioBase - cuponFijo;
+
+        if (precioBase < 0) {
+            precioBase = 0;
+        }
+    }
+};
+
+class JuegoFisico : public Juego {
+private:
+    float costoEnvio;
+
+public:
+    JuegoFisico(string t, float p, float envio)
+        : Juego(t, p) {
+        costoEnvio = envio;
+    }
+
+    float calcularPrecioFinal() override {
+        return precioBase + costoEnvio;
+    }
+};
+
+class JuegoDigital : public Juego {
+private:
+    float descuentoDigital;
+
+public:
+    JuegoDigital(string t, float p, float descuento)
+        : Juego(t, p) {
+        descuentoDigital = descuento;
+    }
+
+    float calcularPrecioFinal() override {
+        return precioBase - (precioBase * descuentoDigital / 100);
+    }
+};
+
+class Cliente {
+private:
+    string nombre;
+    vector<Juego*> compras;
+
+public:
+    Cliente(string n) {
+        nombre = n;
+    }
+
+    void comprar(Juego* j) {
+        compras.push_back(j);
+    }
+
+    void mostrarResumenCompra() {
+        float total = 0;
+
+        cout << "\nCliente: " << nombre << endl;
+        cout << "Resumen de compra:" << endl;
+
+        for (int i = 0; i < compras.size(); i++) {
+            cout << "Juego: " << compras[i]->getTitulo() << endl;
+            cout << "Precio final: $"
+                 << compras[i]->calcularPrecioFinal() << endl;
+
+            total = total + compras[i]->calcularPrecioFinal();
+        }
+
+        cout << "Total a pagar: $" << total << endl;
+    }
+};
+
+int main() {
+    JuegoFisico juego1("Minecraft", 20000, 3000);
+    JuegoDigital juego2("FIFA", 30000, 10);
+    JuegoFisico juego3("GTA V", 25000, 2500);
+
+    juego1.aplicarDescuento(15);
+    juego2.aplicarDescuento(10, 2000);
+
+    Cliente cliente1("Agostina");
+
+    cliente1.comprar(&juego1);
+    cliente1.comprar(&juego2);
+    cliente1.comprar(&juego3);
+
+    cliente1.mostrarResumenCompra();
+
+    return 0;
+}
